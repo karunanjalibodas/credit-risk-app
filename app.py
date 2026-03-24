@@ -38,7 +38,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ---------------- SESSION STATE ----------------
+# ---------------- SESSION INIT ----------------
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
@@ -68,11 +68,10 @@ if not st.session_state.logged_in:
 col_logout = st.columns([8,1])
 with col_logout[1]:
     if st.button("🚪 Logout"):
-        st.session_state.logged_in = False
-        st.session_state.step = 1
+        st.session_state.clear()
         st.rerun()
 
-# ---------------- STEP 1 (HERO) ----------------
+# ---------------- STEP 1 ----------------
 if st.session_state.step == 1:
 
     st.markdown('<p class="big-title">💳 Get Instant Loan in Minutes</p>', unsafe_allow_html=True)
@@ -119,7 +118,7 @@ elif st.session_state.step == 3:
 
     if st.button("Next"):
         if "saving" not in st.session_state:
-            st.warning("Please select savings type")
+            st.warning("⚠️ Please select savings type")
             st.stop()
 
         st.session_state.job = job
@@ -144,8 +143,17 @@ elif st.session_state.step == 4:
         st.session_state.purpose = purpose
         st.session_state.step = 5
 
-# ---------------- STEP 5 RESULT ----------------
+# ---------------- STEP 5 (RESULT) ----------------
 elif st.session_state.step == 5:
+
+    # ✅ FIX: Prevent crash if state missing
+    required_fields = ["age", "sex", "job", "housing", "saving", "checking", "credit", "duration", "purpose"]
+
+    for field in required_fields:
+        if field not in st.session_state:
+            st.warning("⚠️ Please complete all steps first")
+            st.session_state.step = 1
+            st.stop()
 
     st.subheader("📈 Credit Risk Result")
 
