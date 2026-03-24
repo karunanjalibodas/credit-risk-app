@@ -14,27 +14,67 @@ model = joblib.load("model.pkl")
 # ---------------- GLOBAL CSS ----------------
 st.markdown("""
 <style>
+
+/* ---------- BACKGROUND ---------- */
 .stApp {
-    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-    color: white;
+    background: #f5f7fa;
 }
-.big-title {
+
+/* ---------- CENTER LOGIN ---------- */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 80vh;
+}
+
+/* ---------- LOGIN CARD ---------- */
+.login-card {
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+    width: 350px;
+    box-shadow: 0px 10px 30px rgba(0,0,0,0.1);
     text-align: center;
-    font-size: 42px;
+    animation: fadeIn 1s ease-in-out;
+}
+
+/* ---------- TITLE ---------- */
+.title {
+    font-size: 22px;
     font-weight: bold;
+    margin-bottom: 10px;
 }
-.sub-text {
-    text-align: center;
-    font-size: 18px;
-    color: #cfcfcf;
+
+/* ---------- SUBTITLE ---------- */
+.subtitle {
+    color: gray;
+    margin-bottom: 20px;
 }
+
+/* ---------- INPUT ---------- */
+.stTextInput input {
+    background-color: #ffffff !important;
+    color: black !important;
+    border-radius: 10px;
+}
+
+/* ---------- BUTTON ---------- */
 .stButton>button {
-    background: linear-gradient(90deg, #00c6ff, #0072ff);
+    background: linear-gradient(90deg, #0072ff, #00c6ff);
     color: white;
     border-radius: 10px;
     height: 45px;
     width: 100%;
+    font-weight: bold;
 }
+
+/* ---------- ANIMATION ---------- */
+@keyframes fadeIn {
+    from {opacity: 0; transform: translateY(20px);}
+    to {opacity: 1; transform: translateY(0);}
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -48,8 +88,14 @@ if "step" not in st.session_state:
 # ---------------- LOGIN PAGE ----------------
 if not st.session_state.logged_in:
 
-    st.markdown('<p class="big-title">💳 AI Credit Risk System</p>', unsafe_allow_html=True)
-    st.markdown('<p class="sub-text">Secure Login</p>', unsafe_allow_html=True)
+    st.markdown('<div class="login-container">', unsafe_allow_html=True)
+    st.markdown('<div class="login-card">', unsafe_allow_html=True)
+
+    # LOGO (emoji based)
+    st.markdown("## 💳")
+
+    st.markdown('<div class="title">AI Credit Risk System</div>', unsafe_allow_html=True)
+    st.markdown('<div class="subtitle">Secure Login</div>', unsafe_allow_html=True)
 
     username = st.text_input("👤 Username")
     password = st.text_input("🔒 Password", type="password")
@@ -62,11 +108,14 @@ if not st.session_state.logged_in:
         else:
             st.error("Invalid Credentials ❌")
 
+    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
     st.stop()
 
 # ---------------- LOGOUT ----------------
-col_logout = st.columns([8,1])
-with col_logout[1]:
+col1, col2 = st.columns([8,1])
+with col2:
     if st.button("🚪 Logout"):
         st.session_state.clear()
         st.rerun()
@@ -74,10 +123,10 @@ with col_logout[1]:
 # ---------------- STEP 1 ----------------
 if st.session_state.step == 1:
 
-    st.markdown('<p class="big-title">💳 Get Instant Loan in Minutes</p>', unsafe_allow_html=True)
-    st.markdown('<p class="sub-text">AI Powered • No Paperwork • Fast Approval</p>', unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align:center;'>💳 Get Instant Loan</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align:center;'>AI Powered • Fast Approval</p>", unsafe_allow_html=True)
 
-    if st.button("🚀 Check Eligibility"):
+    if st.button("🚀 Start"):
         st.session_state.step = 2
 
 # ---------------- STEP 2 ----------------
@@ -103,7 +152,7 @@ elif st.session_state.step == 3:
     col1, col2, col3 = st.columns(3)
 
     with col1:
-        if st.button("💸 Low Savings"):
+        if st.button("💸 Low"):
             st.session_state.saving = "little"
 
     with col2:
@@ -118,7 +167,7 @@ elif st.session_state.step == 3:
 
     if st.button("Next"):
         if "saving" not in st.session_state:
-            st.warning("⚠️ Please select savings type")
+            st.warning("Select savings type")
             st.stop()
 
         st.session_state.job = job
@@ -130,34 +179,31 @@ elif st.session_state.step == 4:
 
     st.subheader("🏦 Loan Details")
 
-    credit = st.slider("💸 Loan Amount", 100, 20000, 5000)
-    duration = st.slider("📅 Duration (months)", 1, 48, 12)
+    credit = st.slider("Loan Amount", 100, 20000, 5000)
+    duration = st.slider("Duration", 1, 48, 12)
 
     checking = st.selectbox("Checking Account", ["little", "moderate", "rich", "unknown"])
     purpose = st.selectbox("Purpose", ["car", "furniture", "radio/TV", "education", "business"])
 
-    if st.button("🔍 Predict"):
+    if st.button("Predict"):
         st.session_state.credit = credit
         st.session_state.duration = duration
         st.session_state.checking = checking
         st.session_state.purpose = purpose
         st.session_state.step = 5
 
-# ---------------- STEP 5 (RESULT) ----------------
+# ---------------- RESULT ----------------
 elif st.session_state.step == 5:
 
-    # ✅ FIX: Prevent crash if state missing
-    required_fields = ["age", "sex", "job", "housing", "saving", "checking", "credit", "duration", "purpose"]
-
-    for field in required_fields:
-        if field not in st.session_state:
-            st.warning("⚠️ Please complete all steps first")
+    required = ["age","sex","job","housing","saving","checking","credit","duration","purpose"]
+    for r in required:
+        if r not in st.session_state:
+            st.warning("Complete all steps")
             st.session_state.step = 1
             st.stop()
 
-    st.subheader("📈 Credit Risk Result")
+    st.subheader("📈 Result")
 
-    # Prepare Data
     data = pd.DataFrame([[
         st.session_state.age,
         st.session_state.sex,
@@ -171,61 +217,38 @@ elif st.session_state.step == 5:
     ]],
     columns=["Age","Sex","Job","Housing","Saving accounts","Checking account","Credit amount","Duration","Purpose"])
 
-    # Encode
     from sklearn.preprocessing import LabelEncoder
     le = LabelEncoder()
     for col in data.select_dtypes(include="object"):
         data[col] = le.fit_transform(data[col])
 
-    # Prediction
-    prediction = model.predict(data)[0]
-    probability = model.predict_proba(data)[0][1]
+    pred = model.predict(data)[0]
+    prob = model.predict_proba(data)[0][1]
 
-    score = int((1 - probability) * 1000)
+    score = int((1 - prob) * 1000)
 
-    # -------- CREDIT SCORE --------
-    st.markdown(f"""
-    <div style="text-align:center;">
-        <h1 style="font-size:60px; color:#00ffcc;">{score}</h1>
-        <p>Credit Score</p>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(f"<h1 style='text-align:center;color:#0072ff;'>{score}</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align:center;'>Credit Score</p>", unsafe_allow_html=True)
 
-    col1, col2 = st.columns(2)
-    col1.metric("Approval Chance", f"{int((1-probability)*100)}%")
-    col2.metric("Risk Level", "Low Risk ✅" if prediction == 0 else "High Risk ❌")
+    c1, c2 = st.columns(2)
+    c1.metric("Approval", f"{int((1-prob)*100)}%")
+    c2.metric("Risk", "Low ✅" if pred==0 else "High ❌")
 
-    # -------- RECOMMENDATIONS --------
-    st.subheader("💡 Recommendations")
-
-    if prediction == 1:
+    st.subheader("💡 Suggestions")
+    if pred == 1:
         st.write("👉 Reduce loan amount")
         st.write("👉 Improve job stability")
-        st.write("👉 Reduce duration")
     else:
-        st.success("✔️ You are eligible 🎉")
+        st.success("Eligible 🎉")
 
-    # -------- SHAP --------
-    st.subheader("📊 Explainable AI")
-
+    st.subheader("📊 SHAP")
     try:
         explainer = shap.TreeExplainer(model)
-        shap_values = explainer.shap_values(data)
-
-        shap_array = np.array(shap_values)
-
-        if shap_array.ndim == 3:
-            shap_val = shap_array[0][:, 1]
-        else:
-            shap_val = shap_array[0]
-
-        shap_df = pd.DataFrame([shap_val], columns=data.columns)
-
+        shap_vals = explainer.shap_values(data)
+        shap_df = pd.DataFrame([shap_vals[0]], columns=data.columns)
         st.bar_chart(shap_df.T)
+    except:
+        st.warning("SHAP not supported")
 
-    except Exception as e:
-        st.error(f"SHAP error: {e}")
-
-    # Restart
-    if st.button("🔄 Start Again"):
+    if st.button("Restart"):
         st.session_state.step = 1
